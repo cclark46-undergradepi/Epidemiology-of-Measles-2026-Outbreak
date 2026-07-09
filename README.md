@@ -1,7 +1,7 @@
 # Epidemiology-of-Measles-2026-Outbreak
 Epidemiology of Measles 2026 Outbreak
 
-Disease Background Information
+Disease Background Information:
 Measles is a highly contagious infectious disease with an R0 of 12-18, while the incidence remains low due to a widely available and effective vaccine. It has seen a resurgence in 2026. I wanted to understand how median coverage estimates influence measles case odds while adjusting for background rates of disease.
 
 Background:
