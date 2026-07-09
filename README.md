@@ -39,7 +39,9 @@ Figures 5&6 Understanding Quasibinomial Model Fit
 
 Formulas:
 Coefficient of Variation = σ/μ x 100
+
 Logistic Regression=  ln⁡(p/(1-p))=β_0+β_1 x_1+β_2 x_2+⋯+β_k x_k
+
 Quasibinomial model with dispersion= Var(y) = φ ⋅ μ(1 – μ)
 
 Figure 7. Predicted Probabilities of Quasibinomial Model 95% Confidence Interval
