@@ -1,0 +1,109 @@
+---
+title: "Untitled"
+author: "Claire Clark"
+date: "2026-07-01"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(readr)
+finaldata_clean <- read_csv("finaldata_clean.csv")
+View(finaldata_clean)
+```
+```{r}
+range(finaldata_clean$Median_Coverage)
+CV<-(sd(finaldata_clean$Median_Coverage)/mean(finaldata_clean$Median_Coverage,na.rm = T))*100
+print(CV)
+4.362786/49
+```
+
+#CALCULATING prevelance per 100000
+```{r}
+finaldata_clean$prevelance<- finaldata_clean$Case_Count/finaldata_clean$Population *100000
+```
+#binomial model to understand VE effectivness
+```{r}
+##MAKING REIGONS FOR TABLE 1 CREATION
+library(dplyr)
+
+finaldata_clean <- finaldata_clean %>% 
+  mutate(
+    reigon = case_when(
+      Geography %in% c("Maine", "New York", "Vermont", "Connecticut", "Delaware", 
+                   "District of Columbia", "Illinois", "Indiana", "Iowa", "Maryland", 
+                   "Massachusetts", "Michigan", "Minnesota", "Missouri", "Nebraska", 
+                   "New Hampshire", "New Jersey", "Ohio", "Pennsylvania", "Rhode Island", 
+                   "Virginia", "Wisconsin") ~ "North",
+      
+      Geography %in% c("Texas", "Florida", "Georgia", "Alabama", "Arkansas", "Kentucky", 
+                   "Kansas", "Louisiana", "Mississippi", "North Carolina", "Tennessee", 
+                   "West Virginia", "South Carolina") ~ "South",
+      
+      Geography %in% c("California", "Oregon", "Washington", "Alaska", "Arizona", "Colorado", 
+                   "Hawaii", "Idaho", "Nevada", "North Dakota", "Oklahoma", "Utah", 
+                   "Wyoming", "New Mexico") ~ "West",
+      TRUE ~ "Other"
+    )
+  )
+
+```
+
+
+```{r}
+library(table1)
+library(knitr)
+library(kableExtra)
+t1_output <- table1(~Median_Coverage + Case_Count + Population + prevelance | reigon, 
+                    data = finaldata_clean, 
+                    transpose = TRUE)
+html_string <- as.character(t1_output)
+save_kable(html_string, file = "table1.png")
+```
+
+```{r}
+library(modelsummary)
+finaldata_clean$scaledcoverage <- scale(finaldata_clean$Median_Coverage)
+
+
+y_matrix <- cbind(finaldata_clean$Case_Count, finaldata_clean$Population - finaldata_clean$Case_Count)
+log_model1 <- glm(y_matrix ~ scaledcoverage + prevelance, 
+                 family = binomial(link = "logit"), 
+                 data = finaldata_clean)
+modelsummary(log_model1)
+
+VE_logistic <- 1 - exp(coef(log_model1)["scaledcoverage"])
+print(VE_logistic)
+
+y_matrix <- cbind(finaldata_clean$Case_Count, finaldata_clean$Population - finaldata_clean$Case_Count)
+log_model2 <- glm(y_matrix ~ scaledcoverage + prevelance, 
+                 family = quasibinomial(link = "logit"), 
+                 data = finaldata_clean)
+modelsummary(log_model2)
+
+VE_logistic <- 1 - exp(coef(log_model1)["scaledcoverage"])
+print(VE_logistic)
+
+VE_logistic <- 1 - exp(coef(log_model2)["scaledcoverage"])
+print(VE_logistic)
+finaldata_clean$scaledcoverage<- as.numeric(finaldata_clean$scaledcoverage)
+log_model3 <- glm(y_matrix ~ scaledcoverage + prevelance+reigon, 
+                 family = quasibinomial(link = "logit"), 
+                 data = finaldata_clean)
+modelsummary(log_model2)
+modelsummary(log_model3)
+
+```
+
+```{r}
+plot(log_model2)
+```
+```{r}
+#library(ggeffects)
+#plot(predict_response(log_model2, terms = "scaledcoverage"))
+```
+
+
+
